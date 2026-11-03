@@ -107,6 +107,20 @@ export function step(grid) {
 }
 // #endregion
 
+// Everything the hover inspector shows about one cell.
+export function inspectCell(grid, row, col) {
+  const alive = isAlive(grid, row, col);
+  const neighbours = countNeighbours(grid, row, col);
+  return {
+    row: row,
+    col: col,
+    alive: alive,
+    age: grid.age[indexOf(grid, row, col)],
+    neighbours: neighbours,
+    aliveNext: willBeAlive(alive, neighbours),
+  };
+}
+
 // #region clear
 export function clearGrid(grid) {
   // "Purge": a brand-new grid of the same size, every cell dead, age 0.

@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   createGrid, step, placePattern, population, isAlive, setCell,
-  clearGrid, randomize, countNeighbours, PATTERNS,
+  clearGrid, randomize, countNeighbours, inspectCell, PATTERNS,
 } from './life.js';
 
 const aliveCells = (grid) => {
@@ -57,4 +57,30 @@ test('step does not modify the grid it was given', () => {
   const before = aliveCells(g);
   step(g);
   assert.deepEqual(aliveCells(g), before);
+});
+
+test('inspectCell reports a dead cell about to be born', () => {
+  const g = placePattern(createGrid(10, 10), PATTERNS.blinker, 5, 4); // cells (5,4) (5,5) (5,6)
+  const info = inspectCell(g, 4, 5); // dead, directly above the middle
+  assert.equal(info.alive, false);
+  assert.equal(info.neighbours, 3);
+  assert.equal(info.aliveNext, true);
+});
+
+test('inspectCell reports a live cell about to die, and its age', () => {
+  const g = step(placePattern(createGrid(10, 10), PATTERNS.blinker, 5, 4)); // now vertical
+  const middle = inspectCell(g, 5, 5); // survived once, 2 neighbours
+  assert.deepEqual([middle.alive, middle.age, middle.neighbours, middle.aliveNext], [true, 1, 2, true]);
+  const end = inspectCell(g, 4, 5); // newborn, only 1 neighbour
+  assert.deepEqual([end.alive, end.age, end.neighbours, end.aliveNext], [true, 0, 1, false]);
+});
+
+test('inspectCell always agrees with what step actually does', () => {
+  const g = randomize(20, 20, 0.3);
+  const next = step(g);
+  for (let row = 0; row < 20; row++) {
+    for (let col = 0; col < 20; col++) {
+      assert.equal(inspectCell(g, row, col).aliveNext, isAlive(next, row, col));
+    }
+  }
 });

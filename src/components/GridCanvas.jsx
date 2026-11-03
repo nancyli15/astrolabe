@@ -8,7 +8,7 @@
 // component draws pixels directly.
 // ---------------------------------------------------------------------------
 import { useEffect, useRef } from 'react';
-import { step, setCell, isAlive } from '../engine/life.js';
+import { step, setCell, isAlive, inspectCell } from '../engine/life.js';
 import { computeGridLayout, screenToCell } from '../engine/layout.js';
 
 const COLORS = {
@@ -19,6 +19,10 @@ const COLORS = {
   stable: '#14b8a6', // age 2+: deep teal
   frame: '#4a3b6b', // muted violet
   accent: '#e9c46a', // soft gold
+  blackTide: '#a78bfa', // inspector title for dead cells: light violet
+  dies: '#ef4444', // inspector: red, the one place red appears on the board
+  inspectorText: '#d1d5db',
+  inspectorBackground: 'rgba(11, 6, 20, 0.92)', // abyssal violet, slightly see-through
 };
 
 // Optional artwork. Drop your PNG at public/assets/grid_frame.png and it is
@@ -29,6 +33,7 @@ export default function GridCanvas({ gridRef, pausedRef, tickMs, onGeneration, o
   const canvasRef = useRef(null);
   const sizeRef = useRef({ width: 0, height: 0, dpr: 1 });
   const hoverRef = useRef(null); // { row, col } under the mouse, or null
+  const cursorRef = useRef(null); // { x, y } of the mouse on the canvas, or null
   const frameImageRef = useRef(null);
   // Keep the latest callbacks in a ref so the animation loop never restarts.
   const callbacks = useRef({});
@@ -94,6 +99,64 @@ export default function GridCanvas({ gridRef, pausedRef, tickMs, onGeneration, o
     }
 
     drawFrame(ctx, L);
+    drawInspector(ctx, width, height); // last, so it sits on top of everything
+  }
+
+  // The hover box. It reads the grid on every frame, so its numbers stay correct
+  // while the simulation runs, even if the mouse isn't moving.
+  function drawInspector(ctx, width, height) {
+    const hover = hoverRef.current;
+    const cursor = cursorRef.current;
+    if (!hover || !cursor || paint.current) return; // hidden while painting
+
+    const cell = inspectCell(gridRef.current, hover.row, hover.col);
+    let nextText = 'STAYS DEAD';
+    let nextColor = COLORS.inspectorText;
+    if (cell.alive && cell.aliveNext) { nextText = 'SURVIVES'; nextColor = COLORS.young; }
+    if (cell.alive && !cell.aliveNext) { nextText = 'DIES'; nextColor = COLORS.dies; }
+    if (!cell.alive && cell.aliveNext) { nextText = 'BORN'; nextColor = COLORS.newborn; }
+
+    const lines = [
+      {
+        text: `${cell.alive ? 'REMEMBRANCE' : 'BLACK TIDE'} · (${cell.row}, ${cell.col})`,
+        color: cell.alive ? COLORS.young : COLORS.blackTide,
+      },
+      { text: `Age        : ${cell.alive ? cell.age : '-'}`, color: COLORS.inspectorText },
+      { text: `Neighbours : ${cell.neighbours}`, color: COLORS.inspectorText },
+      { text: `Next gen   : ${nextText}`, color: nextColor },
+    ];
+
+    // save/restore so these text settings can't affect the frame label next frame.
+    ctx.save();
+    ctx.font = '12px ui-monospace, Menlo, Consolas, monospace';
+    ctx.textBaseline = 'top';
+
+    const padding = 8;
+    const lineHeight = 16;
+    const gap = 12; // space between the cursor and the box
+    const textWidth = Math.max(...lines.map((line) => ctx.measureText(line.text).width));
+    const boxWidth = Math.ceil(textWidth) + padding * 2;
+    const boxHeight = lines.length * lineHeight + padding * 2;
+
+    // Top right of the cursor, flipping to the other side if it would be cut off.
+    let x = cursor.x + gap;
+    let y = cursor.y - gap - boxHeight;
+    if (x + boxWidth > width) x = cursor.x - gap - boxWidth;
+    if (y < 0) y = cursor.y + gap;
+    x = Math.round(Math.max(0, x));
+    y = Math.round(Math.min(y, height - boxHeight));
+
+    ctx.fillStyle = COLORS.inspectorBackground;
+    ctx.fillRect(x, y, boxWidth, boxHeight);
+    ctx.strokeStyle = COLORS.accent;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x + 0.5, y + 0.5, boxWidth - 1, boxHeight - 1);
+
+    lines.forEach((line, i) => {
+      ctx.fillStyle = line.color;
+      ctx.fillText(line.text, x + padding, y + padding + i * lineHeight);
+    });
+    ctx.restore();
   }
 
   function drawFrame(ctx, L) {
@@ -200,6 +263,11 @@ export default function GridCanvas({ gridRef, pausedRef, tickMs, onGeneration, o
   function handlePointerMove(event) {
     const cell = cellAt(event);
     hoverRef.current = cell;
+    // Touch screens have no hover, so the inspector only follows a real pointer.
+    const rect = canvasRef.current.getBoundingClientRect();
+    cursorRef.current = event.pointerType === 'touch'
+      ? null
+      : { x: event.clientX - rect.left, y: event.clientY - rect.top };
     const p = paint.current;
     if (!p || !cell) return;
     if (cell.row === p.last.row && cell.col === p.last.col) return;
@@ -223,7 +291,7 @@ export default function GridCanvas({ gridRef, pausedRef, tickMs, onGeneration, o
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
-      onPointerLeave={() => { hoverRef.current = null; }}
+      onPointerLeave={() => { hoverRef.current = null; cursorRef.current = null; }}
     />
   );
 }
