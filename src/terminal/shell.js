@@ -38,6 +38,7 @@ export function runLine(state, line, app) {
   let stdin = null;
   let failed = false;
   let clear = false;
+  let pid = null; // set when the last stage's output starts with a process id
   for (const { name, args } of plan.stages) {
     if (!Object.hasOwn(COMMANDS, name)) {
       print(`sh: ${name}: command not found. Type help for a list.`, 'error');
@@ -49,6 +50,7 @@ export function runLine(state, line, app) {
     if (result.mission) print(result.mission, 'mission');
     if (result.clear) clear = true;
     stdin = result.stdout ?? '';
+    pid = result.pid ?? null;
   }
 
   // The last stage's output goes to a file if there's a redirect, or else the screen.
@@ -63,7 +65,7 @@ export function runLine(state, line, app) {
       current = { ...current, root: written.root };
     }
   } else if (stdin !== '' && stdin !== null) {
-    print(stdin);
+    output.push({ text: stdin, pid });
   }
 
   const { missionIndex, message } = advanceMission(current.missionIndex, {

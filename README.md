@@ -28,8 +28,8 @@ Type `help` for the full list, or `missions` for an 11-step Linux tutorial. It's
 |---|---|
 | `pwd` `ls` `cd` `cat` `mkdir` `touch` `echo` `grep` | Work with the pretend disk. `/src` holds the app's real source code. |
 | `\|` `>` `>>` | Pipe output into another command, or write it to a file |
-| `help` `history` `clear` `missions` | Shell helpers and the tutorial. Up and Down recall earlier commands. |
-| `./life --seed glider` `pause` `resume` `step` `ps` `kill <pid>` | Control the running simulation |
+| `help` `history` `clear` `missions` `glossary` | Shell helpers, the tutorial, and an explanation of process IDs, statuses and error messages. Up and Down recall earlier commands. |
+| `./life --seed glider` `pause` `resume` `step` `ps` `kill <pid>` | Control the running simulation. Hover over a process ID like `[102]` to see what it means. |
 
 ## How it works
 

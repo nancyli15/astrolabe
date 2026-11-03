@@ -30,14 +30,16 @@ export const APP_COMMANDS = {
       if (args.length === 2) {
         const seed = findSeed(args[1]);
         if (!seed) return { stderr: `./life: unknown seed '${args[1]}'\nseeds: ${SEEDS.join(', ')}` };
-        return { stdout: `[${app.start(LIFE_ID, seed)}] started with seed ${seed}` };
+        const pid = app.start(LIFE_ID, seed);
+        return { stdout: `[${pid}] started with seed ${seed}`, pid };
       }
 
       const running = app.status();
       if (running?.id === LIFE_ID) {
         return { stdout: `already running as pid ${running.pid}. Use pause, resume, or --seed to restart.` };
       }
-      return { stdout: `[${app.start(LIFE_ID)}] started` };
+      const pid = app.start(LIFE_ID);
+      return { stdout: `[${pid}] started`, pid };
     },
   },
 
@@ -113,7 +115,7 @@ export const APP_COMMANDS = {
       const running = app.status();
       if (!running || args[0] !== String(running.pid)) return { stderr: `kill: (${args[0]}): no such process` };
       app.kill();
-      return { stdout: `[${running.pid}] terminated ${running.label}` };
+      return { stdout: `[${running.pid}] terminated ${running.label}`, pid: running.pid };
     },
   },
 };

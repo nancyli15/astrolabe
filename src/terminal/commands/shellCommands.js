@@ -1,4 +1,5 @@
 // Commands about the shell itself rather than files or the app.
+import { formatGlossary } from '../content/glossary.js';
 import { missionsCommand } from '../missions.js';
 
 export const SHELL_COMMANDS = {
@@ -18,6 +19,12 @@ export const SHELL_COMMANDS = {
         ].join('\n'),
       };
     },
+  },
+
+  glossary: {
+    usage: 'glossary',
+    summary: 'explain process IDs, statuses and error messages',
+    run: () => ({ stdout: formatGlossary() }),
   },
 
   history: {

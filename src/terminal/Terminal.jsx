@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import CodePanel from '../codePanel/CodePanel.jsx';
 import { SOURCE_FILES } from './content/sourceFiles.js';
 import { displayPath } from './filesystem.js';
+import PidLabel from './PidLabel.jsx';
 import { createShell, runLine } from './shell.js';
 import { inputItem, textItem } from './transcript.js';
 
@@ -41,7 +42,7 @@ export default function Terminal({ title, items, app, onAppend, onClear }) {
     const result = runLine(shellRef.current, line, app);
     shellRef.current = result.state;
     if (result.clear) onClear();
-    else onAppend(result.output.map(({ text, tone }) => textItem(text, tone)));
+    else onAppend(result.output.map(({ text, tone, pid }) => textItem(text, tone, pid)));
     setLine('');
     setHistoryOffset(0);
   }
@@ -70,9 +71,9 @@ export default function Terminal({ title, items, app, onAppend, onClear }) {
   }
 
   // Clicking anywhere in the pane starts typing, unless the click is selecting text
-  // to copy or opening an older code entry.
+  // to copy, opening an older code entry, or using a process ID's hover box.
   function handleClick(event) {
-    if (window.getSelection().toString() !== '' || event.target.closest('summary')) return;
+    if (window.getSelection().toString() !== '' || event.target.closest('summary, .pid-label')) return;
     inputRef.current.focus();
   }
 
@@ -92,6 +93,15 @@ export default function Terminal({ title, items, app, onAppend, onClear }) {
             return (
               <pre key={item.id} className="term-line">
                 <span className="term-prompt">{item.prompt}</span> {item.text}
+              </pre>
+            );
+          }
+          if (item.pid) {
+            // Commands mark which output has a process ID, rather than the screen
+            // searching for [number], which would also match text inside any file.
+            return (
+              <pre key={item.id} className="term-line">
+                <PidLabel pid={item.pid} />{item.text.slice(`[${item.pid}]`.length)}
               </pre>
             );
           }

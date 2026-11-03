@@ -7,6 +7,7 @@
 //   app     the bridge to the running app (see appCommands.js)
 // It returns any of { stdout, stderr, state }. A command never prints directly, and
 // that is what lets the shell send its output into a pipe or a file instead.
+// App commands can also return `pid`, when their stdout starts with that [pid].
 import { getNode, HOME, listDir, makeDir, resolvePath, writeFile } from '../filesystem.js';
 
 const splitLines = (text) => text.replace(/\n$/, '').split('\n');

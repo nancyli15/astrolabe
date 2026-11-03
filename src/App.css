@@ -63,6 +63,40 @@ body { background: var(--bg); color: var(--text); font-family: var(--mono); }
 .term-prompt { color: var(--teal); }
 .tone-error { color: #fca5a5; }
 .tone-mission { color: var(--gold); }
+
+/* A process ID that explains itself on hover. */
+.pid-label {
+  color: var(--teal);
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: help;
+}
+.pid-label:focus-visible { outline: 1px solid var(--teal); outline-offset: 2px; }
+.pid-box {
+  position: fixed; /* escapes the scrollback's clipping; PidLabel.jsx sets where */
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  overflow-y: auto;
+  background: var(--abyss);
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: normal;
+  cursor: auto;
+}
+.pid-box-title { color: var(--gold); letter-spacing: 1px; margin-top: 8px; }
+.pid-box-title:first-child { margin-top: 0; }
+.pid-box-text { display: block; }
+.pid-box-grid { display: flex; flex-direction: column; gap: 3px; }
+.pid-box-row { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 14fr); gap: 12px; }
+.pid-box-row b { color: #fca5a5; font-weight: 400; }
+.pid-box-hint { color: var(--dim); margin-top: 8px; }
 .prompt-row {
   display: flex;
   align-items: baseline;

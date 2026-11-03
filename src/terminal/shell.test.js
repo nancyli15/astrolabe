@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createShell, runLine, COMMANDS } from './shell.js';
+import { GLOSSARY } from './content/glossary.js';
 import { MISSIONS } from './missions.js';
 import { getNode, HOME } from './filesystem.js';
 
@@ -182,6 +183,53 @@ test('with nothing running, app commands say so and ./life starts again', () => 
     assert.match(session([command], app).error, /no simulation is running/);
   }
   assert.match(session(['./life'], app).stdout, /\[101\] started/);
+});
+
+test('glossary prints every status and error message', () => {
+  const { stdout } = session(['glossary']);
+  assert.match(stdout, /process ID/);
+  for (const { name } of GLOSSARY.statuses) assert.ok(stdout.includes(name), name);
+  for (const { message } of GLOSSARY.errors) assert.ok(stdout.includes(message), message);
+});
+
+test('every error in the glossary is one the terminal really prints', () => {
+  // One line that triggers each message, set up in the session before it if needed.
+  const triggers = {
+    'command not found': ['nope'],
+    'No such file or directory': ['cat nope.txt'],
+    'Not a directory': ['cd ~/welcome.txt'],
+    'Is a directory': ['cat /amphoreus'],
+    'File exists': ['mkdir ~/a', 'mkdir ~/a'],
+    'syntax error': ['ls |'],
+    unterminated: ['echo "oops'],
+    'usage:': ['mkdir'],
+    'unknown option': ['grep -z x ~/welcome.txt'],
+    'unknown seed': ['./life --seed nope'],
+    'no simulation is running': ['kill 100', 'pause'],
+    'pause the simulation first': ['step'],
+    'no such process': ['kill 999'],
+    'cannot stop itself': ['kill 1'],
+    'no mission is active': ['missions hint'],
+  };
+  assert.deepEqual(Object.keys(triggers).sort(), GLOSSARY.errors.map((e) => e.message).sort());
+  for (const [message, lines] of Object.entries(triggers)) {
+    assert.ok(session(lines).error.includes(message), `${lines.at(-1)} did not print "${message}"`);
+  }
+});
+
+test('output starting with a process id is marked, and only when shown directly', () => {
+  const pidOf = (lines, app = fakeApp()) => {
+    let state = createShell();
+    let last;
+    for (const line of lines) { last = runLine(state, line, app); state = last.state; }
+    return last.output.at(-1)?.pid;
+  };
+  assert.equal(pidOf(['./life --seed glider']), 101);
+  assert.equal(pidOf(['kill 100']), 100);
+  assert.equal(pidOf(['ps']), null);
+  assert.equal(pidOf(['./life --seed glider | cat']), null, 'piped output is ordinary text');
+  // Text that merely looks like a process id stays ordinary text.
+  assert.equal(pidOf(['echo "[102] started" > ~/fake.txt', 'cat ~/fake.txt']), null);
 });
 
 test('every mission can be finished in order using its own example', () => {
