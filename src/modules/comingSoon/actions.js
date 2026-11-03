@@ -2,10 +2,12 @@
 export const ACTIONS = {
   boot: {
     status: 'NODE SWITCHED · NO MODULE INSTALLED',
-    region: ['src/App.jsx', 'selectNode'],
+    details: ['Module : none installed'],
+    region: ['src/App.jsx', 'launchModule'],
     note:
-      'Clicking a node only changes which module id App remembers. React then removes the old ' +
-      'module from the page and shows the new one, and the old module\'s animation loop and ' +
-      'keyboard shortcuts are cleaned up with it. This placeholder exists to prove switching works.',
+      'Starting a module gives it a new process id and stores that in App. The module\'s `key` is ' +
+      'that id, so React removes the old module from the page and starts the new one, and the old ' +
+      'module\'s animation loop and keyboard shortcuts are cleaned up with it. This placeholder ' +
+      'exists to prove switching works.',
   },
 };

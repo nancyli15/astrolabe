@@ -1,16 +1,17 @@
 // Builds one "log entry" for the code panel: a module's action description
 // (see its actions.js) joined with the real source snippet that action points at.
+// If no details are given, the action's own default details are used.
 import { getRegion } from './regions.js';
 
 let nextEntryId = 0;
 
-export function makeEntry(actions, name, details = []) {
+export function makeEntry(actions, name, details) {
   const action = actions[name];
   return {
     id: nextEntryId++,
     time: new Date().toISOString(),
     status: action.status,
-    details,
+    details: details ?? action.details ?? [],
     note: action.note,
     region: getRegion(...action.region),
   };

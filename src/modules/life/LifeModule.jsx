@@ -8,6 +8,7 @@
 // Data flow: the grid lives in `gridRef`. Buttons/keys replace it; GridCanvas
 // reads it every frame and reports back (generation ticks, paint strokes, FPS).
 // Each user action also calls `log`, which App turns into a code panel entry.
+// It also hands App a set of controls, which is how terminal commands reach it.
 // ---------------------------------------------------------------------------
 import { useCallback, useEffect, useRef, useState } from 'react';
 import GridCanvas from '../../components/GridCanvas.jsx';
@@ -17,28 +18,26 @@ const ROWS = 30;
 const COLS = 30;
 const TICK_MS = 200;
 
-function startingGrid() {
-  // An R-pentomino (5 cells that grow chaotically for a long time) plus a glider.
+function startingGrid(seed) {
+  if (seed === 'random') return randomize(ROWS, COLS, 0.25);
+  // A seed from `./life --seed <name>` goes in the middle of an empty board.
+  if (seed) return placePattern(createGrid(ROWS, COLS), PATTERNS[seed], ROWS / 2 - 1, COLS / 2 - 1);
+
+  // By default: an R-pentomino (5 cells that grow chaotically for a long time) plus a glider.
   let grid = createGrid(ROWS, COLS);
   grid = placePattern(grid, PATTERNS.rPentomino, 13, 14);
   grid = placePattern(grid, PATTERNS.glider, 3, 3);
   return grid;
 }
 
-export default function LifeModule({ log, shortcutsEnabled }) {
+export default function LifeModule({ log, shortcutsEnabled, registerControls, seed }) {
   const gridRef = useRef(null);
-  if (gridRef.current === null) gridRef.current = startingGrid();
+  if (gridRef.current === null) gridRef.current = startingGrid(seed);
   const pausedRef = useRef(false);
   const generationRef = useRef(0);
 
   const [paused, setPaused] = useState(false);
   const [stats, setStats] = useState({ generation: 0, population: population(gridRef.current), fps: 0 });
-
-  // Tell the code panel this module has started. It runs after the first render
-  // because a component must not change its parent's state while rendering.
-  useEffect(() => {
-    log('boot', ['Rule set : B3/S23 (standard Conway)', 'Topology : 30×30 torus']);
-  }, [log]);
 
   const refreshStats = useCallback(() => {
     setStats((s) => ({ ...s, generation: generationRef.current, population: population(gridRef.current) }));
@@ -74,12 +73,33 @@ export default function LifeModule({ log, shortcutsEnabled }) {
     log('random', [`Live cells : ${population(gridRef.current)} / ${ROWS * COLS}`]);
   }, [refreshStats, log]);
 
+  // ---- Controls for terminal commands ---------------------------------------
+  // #region registerControls
+  // Hand App the same actions the buttons use, so `pause` in the terminal and the
+  // Pause button run identical code. They're taken back when this module stops.
+  useEffect(() => {
+    registerControls({
+      status: () => ({
+        paused: pausedRef.current,
+        generation: generationRef.current,
+        population: population(gridRef.current),
+      }),
+      pause: () => { if (!pausedRef.current) togglePause(); },
+      resume: () => { if (pausedRef.current) togglePause(); },
+      step: stepOnce,
+    });
+    return () => registerControls(null);
+  }, [registerControls, togglePause, stepOnce]);
+  // #endregion
+
   // ---- Keyboard shortcuts ----------------------------------------------------
   useEffect(() => {
     // Off while the astrolabe menu covers this module.
     if (!shortcutsEnabled) return undefined;
 
     function onKey(event) {
+      // Letters typed into the terminal are just letters, not shortcuts.
+      if (event.target.tagName === 'INPUT') return;
       // Leave browser shortcuts like Cmd+R alone.
       if (event.repeat || event.metaKey || event.ctrlKey || event.altKey) return;
       const key = event.key.toLowerCase();
