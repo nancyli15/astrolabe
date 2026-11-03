@@ -129,7 +129,7 @@ export default function GridCanvas({ gridRef, pausedRef, tickMs, onGeneration, o
     }
     ctx.fillStyle = COLORS.frame;
     ctx.font = '11px ui-monospace, Menlo, Consolas, monospace';
-    ctx.fillText(`MATRIX ${gridRef.current.rows}×${gridRef.current.cols} · TORUS`, fx + pad / 2, fy + pad / 2 - 8);
+    ctx.fillText(`Scepter δ-me13 ${gridRef.current.rows}×${gridRef.current.cols} · TORUS`, fx + pad / 2, fy + pad / 2 - 8);
   }
 
   // --- The animation loop -----------------------------------------------------

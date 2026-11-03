@@ -78,6 +78,15 @@ export function countNeighbours(grid, row, col) {
 // #endregion
 
 // #region step
+// The rule for one cell. step() and the hover inspector both ask this function,
+// so what the inspector predicts is always what the engine does next.
+export function willBeAlive(aliveNow, neighbourCount) {
+  if (aliveNow) {
+    return RULES.survive.includes(neighbourCount);
+  }
+  return RULES.birth.includes(neighbourCount);
+}
+
 export function step(grid) {
   // Write into a new grid, so every cell is judged on the same snapshot.
   const nextGrid = createGrid(grid.rows, grid.cols);
@@ -85,15 +94,12 @@ export function step(grid) {
     for (let col = 0; col < grid.cols; col++) {
       const index = indexOf(grid, row, col);
       const count = countNeighbours(grid, row, col);
-      if (isAlive(grid, row, col)) {
-        if (RULES.survive.includes(count)) {
-          nextGrid.alive[index] = 1;
+      const aliveNow = isAlive(grid, row, col);
+      if (willBeAlive(aliveNow, count)) {
+        nextGrid.alive[index] = 1;
+        if (aliveNow) {
           nextGrid.age[index] = Math.min(grid.age[index] + 1, MAX_AGE);
-        }
-      } else {
-        if (RULES.birth.includes(count)) {
-          nextGrid.alive[index] = 1; // a newborn keeps age 0
-        }
+        } // otherwise it's a newborn, which keeps age 0
       }
     }
   }
