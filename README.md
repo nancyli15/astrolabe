@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Amphoreus Astrolabe: Eternal Recurrence
 
-## Getting Started
+An interactive Conway's Game of Life with a "self-documenting" code panel. Click or drag on the grid to draw cells and watch them evolve. Every action you take (painting, pausing, stepping, purging) makes the left panel show the **actual source code** that handled it, plus a plain-English explanation.
 
-First, run the development server:
+Themed after the debugging-terminal look of Amphoreus (*Honkai: Star Rail*). Unofficial fan project. All code and artwork are original.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Controls
+
+| Action | Mouse / button | Key |
+|---|---|---|
+| Draw / erase cells | Click or drag on the grid | |
+| Play / pause | ▶ / ❚❚ | `Space` |
+| Advance one generation (while paused) | Step | `N` |
+| Random board | Random | `G` |
+| Clear the board | Purge | `R` |
+
+## How it works
+
+```
+src/
+  engine/
+    life.js          Game of Life rules: pure functions, no DOM (unit-tested)
+    layout.js        where the grid sits on screen + pixel → (row, col)
+    *.test.js        tests: still lifes, oscillators, glider wraparound, click mapping
+  components/
+    GridCanvas.jsx   canvas drawing, animation loop, mouse painting
+  codePanel/
+    regions.js       pulls `// #region` snippets out of the source files
+    actions.js       which snippet + explanation to show for each action
+    CodePanel.jsx    the left-hand panel
+    highlight.jsx    small syntax highlighter
+  App.jsx            layout, buttons, keyboard shortcuts
+public/assets/       drop artwork here (see ASSETS.md)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Rules:** standard Conway B3/S23. A dead cell with exactly 3 live neighbours is born; a live cell with 2 or 3 survives. The board wraps at the edges (a torus).
+- **Engine/renderer split:** `life.js` takes a grid and returns a new one. It never touches the screen, so it can be tested on its own with `npm test`.
+- **Two clocks, one loop:** `requestAnimationFrame` redraws every frame (even while paused, so edits show instantly). A time accumulator advances the simulation one generation every 200 ms when not paused.
+- **Self-documenting panel:** Vite's `?raw` import loads the source files as text. `regions.js` cuts out the part between `// #region name` and `// #endregion`, so the panel always matches the running code.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Run it locally
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Requires [Node.js](https://nodejs.org) 20 or newer.
 
-## Learn More
+```bash
+npm install
+npm run dev      # open the printed http://localhost:5173 link
+npm test         # run the engine tests
+npm run build    # production build into dist/
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Deploy (free) on Vercel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Push this folder to a new GitHub repository.
+2. Sign in at vercel.com with GitHub → **Add New → Project** → import the repo.
+3. Vercel detects Vite. Keep the defaults (build `npm run build`, output `dist`) and click **Deploy**.
+4. Every later `git push` redeploys automatically.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Roadmap
 
-## Deploy on Vercel
+- [x] **Milestone 1:** 30×30 Game of Life on canvas, split code/canvas layout
+- [x] **Milestone 2:** click/drag editing, pause/step/purge controls, frame artwork slot
+- [ ] **Milestone 3:** astrolabe node map: a circular menu (sin/cos layout) whose nodes switch between modules, with Eternal Recurrence as the first module
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Disclaimer
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Unofficial fan-made project, not affiliated with or endorsed by HoYoverse. Honkai: Star Rail, Amphoreus and related names belong to HoYoverse. No game assets are used. Non-commercial.
