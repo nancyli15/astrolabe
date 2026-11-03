@@ -2,7 +2,7 @@
 
 An interactive Conway's Game of Life with a "self-documenting" code panel. Click or drag on the grid to draw cells and watch them evolve. Every action you take (painting, pausing, stepping, purging) makes the left panel show the **actual source code** that handled it, plus a plain-English explanation.
 
-Themed after the debugging-terminal look of Amphoreus (*Honkai: Star Rail*). Unofficial fan project. All code and artwork are original.
+Themed after the debugging-terminal. Unofficial fan project. All code and artwork are original.
 
 ## Controls
 
