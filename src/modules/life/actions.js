@@ -8,6 +8,7 @@
 export const ACTIONS = {
   boot: {
     status: 'SYSTEM ONLINE · ETERNAL RECURRENCE RUNNING',
+    details: ['Rule set : B3/S23 (standard Conway)', 'Topology : 30×30 torus'],
     region: ['src/engine/life.js', 'step'],
     note:
       'Every 200 ms the engine computes the next generation. A dead cell with exactly 3 live ' +

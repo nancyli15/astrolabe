@@ -1,12 +1,6 @@
 // A placeholder module, so there is something to switch to until a second real
-// module exists. It follows the same rules as every other module.
-import { useEffect } from 'react';
-
-export default function ComingSoonModule({ log }) {
-  useEffect(() => {
-    log('boot', ['Module : none installed']);
-  }, [log]);
-
+// module exists.
+export default function ComingSoonModule() {
   return (
     <div className="coming-soon">
       <p className="coming-soon-title">UNCHARTED NODE</p>

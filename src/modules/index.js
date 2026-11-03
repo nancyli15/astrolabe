@@ -4,8 +4,12 @@
 // Every module has the same shape:
 //   id            unique name; also names its optional art, assets/glyph_<id>.png
 //   label         the name shown on the dial and in the code panel
-//   Component     what to show. It receives `log` and `shortcutsEnabled`.
-//   panelActions  what the code panel says for each action the module logs
+//   Component     what to show. It may use these props from App:
+//                   log(actionName, details)  adds a code entry to the terminal
+//                   shortcutsEnabled          false while the menu covers the module
+//                   registerControls(c)       lets terminal commands control it
+//                   seed                      the starting pattern asked for, if any
+//   panelActions  what the code panel says for each action. Must include `boot`.
 import LifeModule from './life/LifeModule.jsx';
 import { ACTIONS as LIFE_ACTIONS } from './life/actions.js';
 import ComingSoonModule from './comingSoon/ComingSoonModule.jsx';
