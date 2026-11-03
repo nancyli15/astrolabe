@@ -2,13 +2,13 @@
 // behind it, and a plain-English explanation.
 import { highlightLine } from './highlight.jsx';
 
-export default function CodePanel({ entry }) {
+export default function CodePanel({ entry, title }) {
   const { region } = entry;
   return (
     // `key` makes React treat each new entry as a new element, which replays
     // the CSS flash animation.
     <section className="code-panel" key={entry.id}>
-      <header className="panel-header">EXPERIMENT PROGRESS: ETERNAL RECURRENCE</header>
+      <header className="panel-header">EXPERIMENT PROGRESS: {title.toUpperCase()}</header>
 
       <pre className="log">
         <span className="log-dim">[STDOUT @ {entry.time}]</span>
