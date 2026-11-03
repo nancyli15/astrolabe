@@ -61,7 +61,3 @@ npm run build    # production build into dist/
 - [x] **Milestone 1:** 30×30 Game of Life on canvas, split code/canvas layout
 - [x] **Milestone 2:** click/drag editing, pause/step/purge controls, frame artwork slot
 - [ ] **Milestone 3:** astrolabe node map: a circular menu (sin/cos layout) whose nodes switch between modules, with Eternal Recurrence as the first module
-
-## Disclaimer
-
-Unofficial fan-made project, not affiliated with or endorsed by HoYoverse. Honkai: Star Rail, Amphoreus and related names belong to HoYoverse. No game assets are used. Non-commercial.
