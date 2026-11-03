@@ -12,13 +12,13 @@ import { step, setCell, isAlive } from '../engine/life.js';
 import { computeGridLayout, screenToCell } from '../engine/layout.js';
 
 const COLORS = {
-  background: '#050508',
-  deadDot: '#1f2430',
-  newborn: '#ff7b72', // age 0
-  young: '#ffa657', // age 1
-  stable: '#e6edf3', // age 2+
-  frame: '#3a3f4b',
-  accent: '#ef4444',
+  background: '#0b0614', // abyssal violet
+  deadDot: '#2a1f45', // faint violet
+  newborn: '#ffd166', // age 0: gold
+  young: '#5eead4', // age 1: light teal
+  stable: '#14b8a6', // age 2+: deep teal
+  frame: '#4a3b6b', // muted violet
+  accent: '#e9c46a', // soft gold
 };
 
 // Optional artwork. Drop your PNG at public/assets/grid_frame.png and it is

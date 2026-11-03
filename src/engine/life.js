@@ -1,33 +1,23 @@
-// ---------------------------------------------------------------------------
-// life.js — the "Eternal Recurrence" engine.
-//
-// This file is pure logic: no canvas, no React, no DOM. Data goes in, data
-// comes out. Keeping it separate means:
-//   1. we can unit-test it with `npm test` (see life.test.js), and
-//   2. the code panel on the left can show these exact functions to visitors.
-//
 // The `// #region name` / `// #endregion` comments mark the snippets that the
 // code panel displays. If you edit a function, the panel updates by itself.
-// ---------------------------------------------------------------------------
 
-/** Standard Conway rules (B3/S23): born with 3 neighbours, survives with 2 or 3. */
-export const CONWAY = { birth: [3], survive: [2, 3] };
+// Standard Conway rules (B3/S23): born with 3 neighbours, survives with 2 or 3.
+export const RULES = { birth: [3], survive: [2, 3] };
 
-/**
- * A grid is stored as two flat typed arrays instead of an array of objects.
- * Cell (row, col) lives at index row * cols + col.
- *   alive[i] → 1 or 0
- *   age[i]   → how many generations the cell has survived (used for colour)
- */
+const MAX_AGE = 65535; // the largest number a Uint16Array can hold
+
+// A grid stores its cells in two long arrays, one row after another.
+// alive[index] is 1 or 0. age[index] is how many generations the cell survived.
 export function createGrid(rows, cols) {
   return {
-    rows,
-    cols,
+    rows: rows,
+    cols: cols,
     alive: new Uint8Array(rows * cols),
     age: new Uint16Array(rows * cols),
   };
 }
 
+// Finds where a cell sits in the long arrays.
 export function indexOf(grid, row, col) {
   return row * grid.cols + col;
 }
@@ -36,13 +26,17 @@ export function isAlive(grid, row, col) {
   return grid.alive[indexOf(grid, row, col)] === 1;
 }
 
-/** Returns a copy of the grid with one cell set alive/dead (age reset to 0). */
+// Returns a copy of the grid with one cell changed. Its age resets to 0.
 export function setCell(grid, row, col, alive) {
-  const next = copyGrid(grid);
-  const i = indexOf(next, row, col);
-  next.alive[i] = alive ? 1 : 0;
-  next.age[i] = 0;
-  return next;
+  const nextGrid = copyGrid(grid);
+  const index = indexOf(nextGrid, row, col);
+  if (alive) {
+    nextGrid.alive[index] = 1;
+  } else {
+    nextGrid.alive[index] = 0;
+  }
+  nextGrid.age[index] = 0;
+  return nextGrid;
 }
 
 export function copyGrid(grid) {
@@ -54,24 +48,29 @@ export function copyGrid(grid) {
   };
 }
 
+// Counts the live cells on the whole board.
 export function population(grid) {
   let total = 0;
-  for (let i = 0; i < grid.alive.length; i++) total += grid.alive[i];
+  for (let index = 0; index < grid.alive.length; index++) {
+    total = total + grid.alive[index];
+  }
   return total;
 }
 
 // #region neighbours
 export function countNeighbours(grid, row, col) {
-  const { rows, cols, alive } = grid;
   let count = 0;
-  for (let dr = -1; dr <= 1; dr++) {
-    for (let dc = -1; dc <= 1; dc++) {
-      if (dr === 0 && dc === 0) continue; // skip the cell itself
-      // Wrap around the edges: row -1 becomes the last row, and a row
-      // past the bottom becomes row 0. The board behaves like a donut (torus).
-      const r = (row + dr + rows) % rows;
-      const c = (col + dc + cols) % cols;
-      count += alive[r * cols + c];
+  for (let rowOffset = -1; rowOffset <= 1; rowOffset++) {
+    for (let colOffset = -1; colOffset <= 1; colOffset++) {
+      const isSameCell = rowOffset === 0 && colOffset === 0;
+      if (!isSameCell) {
+        // % wraps around the edges: row -1 becomes the last row.
+        const neighbourRow = (row + rowOffset + grid.rows) % grid.rows;
+        const neighbourCol = (col + colOffset + grid.cols) % grid.cols;
+        if (isAlive(grid, neighbourRow, neighbourCol)) {
+          count++;
+        }
+      }
     }
   }
   return count;
@@ -79,25 +78,26 @@ export function countNeighbours(grid, row, col) {
 // #endregion
 
 // #region step
-export function step(grid, rule = CONWAY) {
-  // Build the next generation in a NEW grid, so every cell is judged
-  // against the same snapshot of the current one.
-  const next = createGrid(grid.rows, grid.cols);
+export function step(grid) {
+  // Write into a new grid, so every cell is judged on the same snapshot.
+  const nextGrid = createGrid(grid.rows, grid.cols);
   for (let row = 0; row < grid.rows; row++) {
     for (let col = 0; col < grid.cols; col++) {
-      const i = row * grid.cols + col;
-      const n = countNeighbours(grid, row, col);
-      if (grid.alive[i]) {
-        if (rule.survive.includes(n)) {
-          next.alive[i] = 1;
-          next.age[i] = Math.min(grid.age[i] + 1, 65535); // survived: one gen older
+      const index = indexOf(grid, row, col);
+      const count = countNeighbours(grid, row, col);
+      if (isAlive(grid, row, col)) {
+        if (RULES.survive.includes(count)) {
+          nextGrid.alive[index] = 1;
+          nextGrid.age[index] = Math.min(grid.age[index] + 1, MAX_AGE);
         }
-      } else if (rule.birth.includes(n)) {
-        next.alive[i] = 1; // newborn, age 0
+      } else {
+        if (RULES.birth.includes(count)) {
+          nextGrid.alive[index] = 1; // a newborn keeps age 0
+        }
       }
     }
   }
-  return next;
+  return nextGrid;
 }
 // #endregion
 
@@ -109,28 +109,32 @@ export function clearGrid(grid) {
 // #endregion
 
 // #region randomize
-export function randomize(rows, cols, density = 0.25, random = Math.random) {
+export function randomize(rows, cols, density) {
   const grid = createGrid(rows, cols);
-  for (let i = 0; i < grid.alive.length; i++) {
-    // Each cell independently has a `density` chance of starting alive.
-    grid.alive[i] = random() < density ? 1 : 0;
+  for (let index = 0; index < grid.alive.length; index++) {
+    // Each cell has a `density` chance of starting alive (0.25 means 25%).
+    if (Math.random() < density) {
+      grid.alive[index] = 1;
+    }
   }
   return grid;
 }
 // #endregion
 
-/** Stamp a pattern (list of [row, col] offsets) onto a copy of the grid. */
+// Stamps a shape onto a copy of the grid, with its corner at (top, left).
 export function placePattern(grid, pattern, top, left) {
-  const next = copyGrid(grid);
-  for (const [dr, dc] of pattern) {
-    const r = (top + dr + grid.rows) % grid.rows;
-    const c = (left + dc + grid.cols) % grid.cols;
-    next.alive[r * grid.cols + c] = 1;
+  const nextGrid = copyGrid(grid);
+  for (let cell = 0; cell < pattern.length; cell++) {
+    const rowOffset = pattern[cell][0];
+    const colOffset = pattern[cell][1];
+    const row = (top + rowOffset + grid.rows) % grid.rows;
+    const col = (left + colOffset + grid.cols) % grid.cols;
+    nextGrid.alive[indexOf(grid, row, col)] = 1;
   }
-  return next;
+  return nextGrid;
 }
 
-// A few classic, public-domain patterns.
+// Well-known shapes, each a list of [row, col] positions from its corner.
 export const PATTERNS = {
   glider: [[0, 1], [1, 2], [2, 0], [2, 1], [2, 2]],
   rPentomino: [[0, 1], [0, 2], [1, 0], [1, 1], [2, 1]],
