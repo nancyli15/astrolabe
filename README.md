@@ -1,5 +1,7 @@
 # Astrolabe: Eternal Recurrence
 
+**Live site:** https://nancyli15.github.io/astrolabe/
+
 An interactive Conway's Game of Life with a "self-documenting" code panel. Click or drag on the grid to draw cells and watch them evolve. Every action you take (painting, pausing, stepping, purging) makes the left panel show the **actual source code** that handled it, plus a plain-English explanation.
 
 Themed after the debugging-terminal. Unofficial fan project. All code and artwork are original.
@@ -44,17 +46,21 @@ Requires [Node.js](https://nodejs.org) 20 or newer.
 
 ```bash
 npm install
-npm run dev      # open the printed http://localhost:5173 link
+npm run dev      # open the printed http://localhost:5173/astrolabe/ link
 npm test         # run the engine tests
 npm run build    # production build into dist/
 ```
 
-## Deploy (free) on Vercel
+## Deployment
 
-1. Push this folder to a new GitHub repository.
-2. Sign in at vercel.com with GitHub → **Add New → Project** → import the repo.
-3. Vercel detects Vite. Keep the defaults (build `npm run build`, output `dist`) and click **Deploy**.
-4. Every later `git push` redeploys automatically.
+The site is hosted on GitHub Pages. Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), which installs dependencies, runs the tests and builds the site, then publishes `dist/`. If the tests or build fail, nothing is published.
+
+To deploy your own copy:
+
+1. Push this folder to a GitHub repository.
+2. In `vite.config.js`, set `base` to `/<your-repo-name>/`.
+3. In the repository, go to **Settings → Pages → Source** and choose **GitHub Actions**.
+4. Push to `main`. The site appears at `https://<your-username>.github.io/<your-repo-name>/`.
 
 ## Roadmap
 
