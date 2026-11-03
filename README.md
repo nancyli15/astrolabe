@@ -103,4 +103,8 @@ To deploy your own copy:
 - [x] **Milestone 1:** 30×30 Game of Life on canvas, split code/canvas layout
 - [x] **Milestone 2:** click/drag editing, pause/step/purge controls, frame artwork slot
 - [x] **Milestone 3:** astrolabe node map: a circular menu (sin/cos layout) whose nodes switch between modules, with Eternal Recurrence as the first module
-- [x] **Milestone 4:** a typeable terminal, written from scratch, that can control the app
+- [x] **Milestone 4:** terminal: turn the left panel into a typeable shell written by us (NOT an embedded Linux emulator: it must be able to control the app and be explainable). Pieces: virtual filesystem as a tree, command parser (later pipes `|`), commands `ls cd pwd cat mkdir touch echo grep history clear help`, app commands (`./life --seed glider`, `pause`, `step`, `ps`, `kill`), `cat` on real source files, a tutorial "missions" mode teaching Linux basics with lore files (e.g. `/amphoreus/logs`). The code panel becomes output of the terminal. Optional later: a separate "Real Linux" node that lazy-loads an emulator (v86/WebVM) for practice.
+- [ ] **Milestone 5:** genetic algorithm: evolve small seed patterns that live longest; fitness = run our engine. Pure JS, runs live in the browser.
+- [ ] **Milestone 6:** fate predictor: generate a labelled dataset with our engine (dies out / stabilizes / still active after N gens), train in Python (scikit-learn baseline → small neural net), report accuracy vs a baseline, export to the browser (TensorFlow.js or ONNX Runtime Web). UI predicts a board's fate before it runs.
+- [ ] **Milestone 7:** small CNN that learns the rules (neighbour count = 3×3 convolution); show prediction vs real engine with wrong cells highlighted.
+- [ ] **Milestone 8:** `ask "..."` AI command in the terminal, may need serverless function to hide the API key, a spending cap and per-visitor rate limit.
