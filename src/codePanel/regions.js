@@ -7,12 +7,16 @@
 // ---------------------------------------------------------------------------
 import lifeSource from '../engine/life.js?raw';
 import layoutSource from '../engine/layout.js?raw';
+import astrolabeSource from '../engine/astrolabe.js?raw';
 import canvasSource from '../components/GridCanvas.jsx?raw';
+import appSource from '../App.jsx?raw';
 
 const FILES = {
   'src/engine/life.js': lifeSource,
   'src/engine/layout.js': layoutSource,
+  'src/engine/astrolabe.js': astrolabeSource,
   'src/components/GridCanvas.jsx': canvasSource,
+  'src/App.jsx': appSource,
 };
 
 export function getRegion(file, name) {
