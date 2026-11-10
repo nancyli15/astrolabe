@@ -8,6 +8,7 @@
 export const ACTIONS = {
   boot: {
     status: 'SYSTEM ONLINE · ETERNAL RECURRENCE RUNNING',
+    details: ['Rule set : B3/S23 (standard Conway)', 'Topology : 30×30 torus'],
     region: ['src/engine/life.js', 'step'],
     note:
       'Every 200 ms the engine computes the next generation. A dead cell with exactly 3 live ' +
@@ -57,5 +58,15 @@ export const ACTIONS = {
     note:
       'Each cell gets an independent 25% chance of starting alive. Most random boards settle into still ' +
       'blocks and blinking oscillators within a few hundred generations.',
+  },
+  predict: {
+    status: 'FATE PREDICTION · MODEL vs ENGINE',
+    region: ['src/modules/life/fatePredictor.js', 'predict'],
+    note:
+      'A small neural network, trained on 80,000 boards labelled by this engine, guesses whether the board ' +
+      'dies, settles or stays active within 300 generations. It sees 18 numbers, not the picture: how many ' +
+      'live and dead cells have 0 to 8 neighbours. Then the real engine runs the board to check. The guess ' +
+      'is often wrong: long-term fate is close to chaotic, and the model beats "always guess settles" by ' +
+      'only a few points (see ml/results.json).',
   },
 };

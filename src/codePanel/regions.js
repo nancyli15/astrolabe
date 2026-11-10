@@ -1,26 +1,14 @@
 // ---------------------------------------------------------------------------
 // regions.js — pulls real snippets out of our own source files.
 //
-// Vite's `?raw` import gives us a file's text as a string. We then cut out the
-// part between `// #region name` and `// #endregion`. So the code panel always
-// shows the code that is actually running — no copy-pasted text to keep in sync.
+// SOURCE_FILES holds every source file as text. We cut out the part between
+// `// #region name` and `// #endregion`. So the code panel always shows the code
+// that is actually running — no copy-pasted text to keep in sync.
 // ---------------------------------------------------------------------------
-import lifeSource from '../engine/life.js?raw';
-import layoutSource from '../engine/layout.js?raw';
-import astrolabeSource from '../engine/astrolabe.js?raw';
-import canvasSource from '../components/GridCanvas.jsx?raw';
-import appSource from '../App.jsx?raw';
-
-const FILES = {
-  'src/engine/life.js': lifeSource,
-  'src/engine/layout.js': layoutSource,
-  'src/engine/astrolabe.js': astrolabeSource,
-  'src/components/GridCanvas.jsx': canvasSource,
-  'src/App.jsx': appSource,
-};
+import { SOURCE_FILES } from '../terminal/content/sourceFiles.js';
 
 export function getRegion(file, name) {
-  const lines = FILES[file].split(/\r?\n/);
+  const lines = SOURCE_FILES[`/${file}`].split(/\r?\n/);
   const start = lines.findIndex((line) => line.trim() === `// #region ${name}`);
   if (start === -1) return { file, name, startLine: 1, lines: [`// region "${name}" not found`] };
   let end = start + 1;

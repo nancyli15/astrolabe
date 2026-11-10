@@ -36,6 +36,7 @@ export default function AstrolabeMenu({ modules, activeId, onSelect, onClose }) 
   const activeNodeRef = useRef(null);
 
   // Move keyboard focus onto the current node, so Tab and Enter work right away.
+  // After `kill` nothing is running, so the first node takes focus instead.
   useEffect(() => {
     activeNodeRef.current?.focus();
   }, []);
@@ -83,7 +84,7 @@ export default function AstrolabeMenu({ modules, activeId, onSelect, onClose }) 
           return (
             <button
               key={module.id}
-              ref={isActive ? activeNodeRef : null}
+              ref={isActive || (!activeId && index === 0) ? activeNodeRef : null}
               className={isActive ? 'dial-node active' : 'dial-node'}
               style={{ left: `${positions[index].x}%`, top: `${positions[index].y}%` }}
               aria-current={isActive ? 'true' : undefined}
