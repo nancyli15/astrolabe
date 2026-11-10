@@ -2,7 +2,7 @@
 //
 // They talk to it only through `app`, a small object that App.jsx provides:
 //   app.status()          what's running: { pid, label, id, paused, generation, population }, or null
-//   app.controls()        the running simulation's { pause, resume, step, status }, or null
+//   app.controls()        the running simulation's { pause, resume, step, predict, status }, or null
 //   app.start(id, seed)   starts a module and returns its process id
 //   app.kill()            stops whatever is running
 // Because that's the only connection, the tests can hand in a fake app and check
@@ -76,6 +76,19 @@ export const APP_COMMANDS = {
       if (!controls.status().paused) return { stderr: 'step: pause the simulation first' };
       controls.step();
       return {};
+    },
+  },
+
+  predict: {
+    usage: 'predict',
+    summary: "ask the neural network for the board's fate, then check it with the engine",
+    run: ({ app }) => {
+      const controls = app.controls();
+      if (!controls) return noSimulation('predict');
+      // The model loads in the background, so the answer arrives a moment later as a
+      // code entry, the same one the Predict button shows.
+      controls.predict();
+      return { stdout: 'asking the model… (the answer appears below)' };
     },
   },
 

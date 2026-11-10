@@ -1,0 +1,110 @@
+{
+  "dataset": {
+    "count": 80000,
+    "seed": 42,
+    "rows": 30,
+    "cols": 30,
+    "maxGens": 300,
+    "totals": {
+      "dies": 6584,
+      "settles": 44283,
+      "active": 29133
+    }
+  },
+  "test_boards": 16000,
+  "fates": [
+    "dies",
+    "settles",
+    "active"
+  ],
+  "models": {
+    "baseline": {
+      "accuracy": 0.5536,
+      "train_seconds": 0.0,
+      "confusion": [
+        [
+          0,
+          1317,
+          0
+        ],
+        [
+          0,
+          8857,
+          0
+        ],
+        [
+          0,
+          5826,
+          0
+        ]
+      ]
+    },
+    "logistic": {
+      "accuracy": 0.5996,
+      "train_seconds": 0.6,
+      "confusion": [
+        [
+          656,
+          657,
+          4
+        ],
+        [
+          252,
+          6771,
+          1834
+        ],
+        [
+          34,
+          3625,
+          2167
+        ]
+      ]
+    },
+    "neural_net_pixels": {
+      "accuracy": 0.5847,
+      "train_seconds": 9.2,
+      "confusion": [
+        [
+          703,
+          609,
+          5
+        ],
+        [
+          390,
+          6806,
+          1661
+        ],
+        [
+          43,
+          3936,
+          1847
+        ]
+      ]
+    },
+    "neural_net": {
+      "accuracy": 0.6014,
+      "train_seconds": 1.9,
+      "confusion": [
+        [
+          551,
+          758,
+          8
+        ],
+        [
+          76,
+          5830,
+          2951
+        ],
+        [
+          1,
+          2583,
+          3242
+        ]
+      ]
+    }
+  },
+  "onnx": {
+    "bytes": 15133,
+    "agreement_with_sklearn": 1.0
+  }
+}

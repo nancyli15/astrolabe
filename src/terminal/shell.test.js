@@ -7,7 +7,7 @@ import { getNode, HOME } from './filesystem.js';
 
 // A pretend app, so app commands can be tested without a browser.
 function fakeApp() {
-  const sim = { paused: false, generation: 3, population: 7, steps: 0 };
+  const sim = { paused: false, generation: 3, population: 7, steps: 0, predictions: 0 };
   const app = {
     running: { pid: 100, id: 'eternal-recurrence', label: 'Eternal Recurrence' },
     nextPid: 101,
@@ -19,6 +19,7 @@ function fakeApp() {
       pause: () => { sim.paused = true; },
       resume: () => { sim.paused = false; },
       step: () => { sim.steps++; },
+      predict: () => { sim.predictions++; },
     } : null),
     start: (id, seed) => {
       app.started.push({ id, seed });
@@ -258,4 +259,19 @@ test('missions can give a hint, stop, and restart', () => {
   assert.equal(session(['missions', 'pwd', 'missions restart']).state.missionIndex, 0);
   assert.match(session(['missions hint']).error, /no mission is active/);
   assert.match(session(['missions nonsense']).error, /usage/);
+});
+
+test('predict asks the running simulation for a prediction', () => {
+  const app = fakeApp();
+  const { output } = runLine(createShell(), 'predict', app);
+  assert.equal(app.sim.predictions, 1);
+  assert.match(output[0].text, /asking the model/);
+});
+
+test('predict needs a running simulation', () => {
+  const app = fakeApp();
+  app.kill();
+  const { output } = runLine(createShell(), 'predict', app);
+  assert.equal(output[0].tone, 'error');
+  assert.match(output[0].text, /no simulation is running/);
 });

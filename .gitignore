@@ -8,3 +8,7 @@ CLAUDE.md
 DECISIONS.md
 
 astrolabe.code-workspace
+# Fate predictor: generated data and the Python environment
+ml/data/
+ml/.venv/
+__pycache__/
